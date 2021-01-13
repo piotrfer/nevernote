@@ -1,0 +1,11 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<h2>Notes List</h2>
+<a href="/notes/create">Create note</a>
+{% for note in notes %}
+    <p>{{ note.content }} </p>
+    <p>{{ note.created_on }} </p>
+    <button><a href="/notes/{{note.id}}/show">Details</a></button>
+{% endfor %}
+{% endblock %}
