@@ -36,8 +36,7 @@ def create_note(request):
                 return redirect("notes-list")
         
     elif request.method == 'GET':
-        form = NoteForm()
-        return render(request, "create-note.html", {"form" : form})
+        return render(request, "create-note.html")
 
 def show_note(request, id):
     if not request.user.is_authenticated:
@@ -78,40 +77,44 @@ def edit_note(request, id):
     if not request.user.is_authenticated:
         return unauthorized(request)
     
-    note = Note.objects.filter(user = request.user, id = id)[0]
+    notes = Note.objects.filter(user = request.user, id = id)
     
+    if len(notes) == 0:
+        messages.add_message(request, messages.ERROR, "Note does not exist")
+        return redirect("home")
+    
+    note = notes[0]
+    if note.is_encrypted:
+        messages.add_message(request, messages.ERROR, "You cannot edit encrypted notes. Try adding new one.")
+        return redirect(f"/notes/{id}/show")
+
     if request.method == 'GET':
-        if not note:
-            messages.add_message(request, messages.ERROR, "Note does not exist")
-            return redirect("home")
-        else:
-            form = NoteForm(initial={"content" : note.content})
-            return render(request, "edit-note.html", {"form" : form })
+        form = NoteForm(initial={ "content" : note.content, "is_public" : note.is_public})
+        return render(request, "edit-note.html", {"form" : form })
 
     if request.method == 'POST':
         form = NoteForm(request.POST)
         if form.is_valid():
-            note.content = form.cleaned_data["content"]
-            note.save()
             messages.add_message(request, messages.SUCCESS, "Changes were saved")
             return redirect('notes-list')
         else:
-            for error_name in form.error_messages:
-                messages.add_message(request, messages.ERROR, form.error_messages[error_name])
-            return redirect("edit-note")
+            messages.add_message(request, messages.ERROR, "Form is invalid!")
+            return redirect("edit-note", id=note.id)
 
 def delete_note(request, id):
     if not request.user.is_authenticated:
         return unauthorized(request)
 
-    note = Note.objects.filter(user = request.user, id = id)[0]
+    notes = Note.objects.filter(user = request.user, id = id)
+    
+    if len(notes) == 0:
+        messages.add_message(request, messages.ERROR, "Note does not exist")
+        return redirect("home")
+    
+    note = notes[0]
 
     if request.method == 'GET':
-        if not note:
-            messages.add_message(request, messages.ERROR, "Note does not exist")
-            return redirect("home")
-        else:
-            return render(request, "delete-note.html")
+        return render(request, "delete-note.html")
     
     if request.method == 'POST':
         note.delete()
@@ -130,14 +133,14 @@ def unauthorized(request):
 
 """ FUNCTIONS """
 def process_encrypted(request, data):
-    
-    if "content" not in data:
+    print(data)
+    if "content" not in data or data["content"] == [""]:
         messages.add_message(request, messages.ERROR, "Content cannot be empty!")
         return False
     
     content = data["content"][0]
     
-    if "password_text" not in data:
+    if "password_text" not in data or data["password_text"] == [""]:
         messages.add_message(request, messages.ERROR, "Password cannot be empty!")
         return False
 
@@ -164,8 +167,8 @@ def process_encrypted(request, data):
 
 
 def process_unencrypted(request, data):
-    
-    if "content" not in data:
+    print(data)
+    if "content" not in data or data["content"] == [""]:
         messages.add_message(request, messages.ERROR, "Content cannot be empty!")
         return False
 
@@ -183,8 +186,6 @@ def process_unencrypted(request, data):
     note.save()
     messages.add_message(request, messages.SUCCESS, "Note was created!")
     return True
-
-
 
 
 """ ENCRYPTION """

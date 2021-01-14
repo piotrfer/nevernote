@@ -4,7 +4,34 @@
 <h2>Edit note</h2>
 <form method='POST'>
     {% csrf_token %}
-    {{ form }}
-    <button type="submit">Save</button>
+    <ul>
+        <li>
+            {{ form }}
+        </li>
+        <li>
+            <button type="submit">Save</button>
+            <button type="button"><a href="/notes">Cancel</a></button>
+        </li> 
+        <!-- <li>
+            <label for="content">Content</label>
+            <textarea name="content" rows="4" cols="50">{{ note.content }}</textarea>
+        </li>
+        <li>
+            <li id="ispublic-element">
+                <label for="is_public">Public</label>
+                <input id="is_public" type="checkbox" name="is_public">
+            </li>
+        </li>
+        <li>
+            <button type="submit">Save</button>
+            <button type="button"><a href="/notes">Cancel</a></button>
+        </li>  !-->
+    </ul>
 </form>
+<script>
+
+        document.getElementById("is_public").checked = "{{note.is_public}}";
+
+    
+</script>
 {% endblock %}
