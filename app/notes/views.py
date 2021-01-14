@@ -2,8 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Note
 from .forms import NoteForm
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
 
-# Create your views here.
+""" VIEWS """
 def notes(request):
     if not request.user.is_authenticated:
         return unauthorized(request)
@@ -13,20 +16,22 @@ def notes(request):
 def create_note(request):
     if not request.user.is_authenticated:
         return unauthorized(request)
+    
     if request.method == 'POST':
-        form = NoteForm(request.POST)
-        if form.is_valid():
-            note = Note(user = request.user,
-                        #attachment = form.cleaned_data["attachment"],
-                        content = form.cleaned_data["content"])
-            note.save()
-            messages.add_message(request, messages.SUCCESS, "Note has been created")
-            return redirect("notes-list")
+        data = dict(request.POST)
+        if "is_encrypted" in data and data["is_encrypted"] == ["on"]:
+            if not process_encrypted(request, data):
+                return redirect("create-note")
+            
+            else:
+                return redirect("notes-list")
         else:
-            for error_name in form.error_messages:
-                messages.add_message(request, messages.ERROR, form.error_messages[error_name])
-            return redirect("create-note")
-
+            if not process_unencrypted(request, data):
+                return redirect("create-note")
+            
+            else:
+                return redirect("notes-list")
+        
     elif request.method == 'GET':
         form = NoteForm()
         return render(request, "create-note.html", {"form" : form})
@@ -36,12 +41,28 @@ def show_note(request, id):
         return unauthorized(request)
     
     note = Note.objects.filter(user = request.user, id = id)[0]
-    if not note:
-        messages.add_message(request, messages.ERROR, "Note does not exist")
-        return redirect("home")
-    else:
-        return render(request, "show-note.html", {"note" : note })
 
+    if request.method == 'GET':
+        if not note:
+            messages.add_message(request, messages.ERROR, "Note does not exist")
+            return redirect("home")
+        
+        if note.is_encrypted:
+            return render(request, "show-note.html", {"note" : '', "encrypted" : True })
+        else:
+            return render(request, "show-note.html", {"note" : note, "encrypted" : False })
+    
+    if request.method == 'POST':
+        data = request.POST
+        password = data["password_text"]
+        
+        if not password:
+            messages.add_message(request, messages.ERROR, "You have to provide password!")
+            return redirect("notes-list")
+        
+        note = decrypt_note(password, note)
+        return render(request, "show-note.html", { "note" : note, "encrypted" : False })
+        
 
 def edit_note(request, id):
     if not request.user.is_authenticated:
@@ -86,8 +107,86 @@ def delete_note(request, id):
         note.delete()
         messages.add_message(request, messages.SUCCESS, "Note was deleted")
         return redirect('notes-list')
-        
+
+
+
+""" REDIRECTS """        
 
 def unauthorized(request):
     messages.add_message(request, messages.ERROR, 'You are not authorized to view this page!')
     return redirect("landing-page")
+
+
+
+""" FUNCTIONS """
+def process_encrypted(request, data):
+    content = data["content"][0]
+    if not content:
+        messages.add_message(request, messages.ERROR, "Content cannot be empty!")
+        return False
+    password = data["password_text"][0]
+    
+    if not password:
+        messages.add_message(request, messages.ERROR, "Password cannot be empty!")
+        return False
+    
+    nonce = get_random_bytes(16)
+    encrypted_content = encrypt_content(password, content, nonce)
+    encrypted_password = b'there will be password encryption here'
+    note = Note(
+        user = request.user,
+        content = 'ENCRYPTED NOTE',
+        is_encrypted = True,
+        encrypted_content = encrypted_content,
+        nonce = nonce
+    )
+    note.save()
+    messages.add_message(request, messages.SUCCESS, "Encrypted note was created!")
+    return True
+
+
+def process_unencrypted(request, data):
+    content = data["content"][0]
+    if not content:
+        messages.add_message(request, messages.ERROR, "Content cannot be empty!")
+        return False
+    else:
+        note = Note(
+            user = request.user,
+            content = str(content),
+            is_encrypted = False
+        )
+        note.save()
+        messages.add_message(request, messages.SUCCESS, "Note was created!")
+        return True
+
+
+
+
+""" ENCRYPTION """
+def fill_password(password, nonce):
+    print(f"password: {password}")
+    print(f"nonce: {nonce}")
+    dk = PBKDF2(password, nonce, 16, 10000)
+    print(f"result: {dk}")
+    return dk
+
+def encrypt_content(password, content, nonce):
+    filled_password = fill_password(password, nonce)
+    print(filled_password)
+    aes = AES.new(filled_password, AES.MODE_CFB, nonce)
+    encrypted_content = aes.encrypt(content.encode('utf-8'))
+    return encrypted_content
+
+def decrypt_note(password, note):
+    nonce = note.nonce.tobytes()
+    filled_password = fill_password(password, nonce)
+    print(filled_password)
+    aes = AES.new(filled_password, AES.MODE_CFB, nonce)
+    try:
+        decrypted_content = aes.decrypt(note.encrypted_content.tobytes())
+        note.content = decrypted_content.decode('utf-8')
+    except:
+        note.content = decrypted_content
+    
+    return note

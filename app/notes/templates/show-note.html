@@ -1,18 +1,36 @@
 {% extends "main/base.html" %}
 
 {% block title %}
+
 {% load staticfiles %}
 <script src="{% static 'show-note.js' %}"></script>
+
 {% endblock %}
 
 {% block content %}
-{% for message in messages %}
-{{message}}
-{% endfor %}
 <h2>Note detail</h2>
-{{ note.content }}
-{{ note.created_on }}
-<button type="button"><a href="/notes/{{note.id}}/edit">Edit</a></button>
-<button type="button"><a href="/notes/{{note.id}}/delete">Delete</a></button>
-<button type="button"><a href="/notes/">Back</button>
+
+{% if encrypted %}
+
+    <form method='POST'>
+        {% csrf_token %}
+        <ul>
+            <li>
+                <input type="password" name="password_text" required>
+            </li>
+            <li>
+                <button type="submit">Decrypt</button>
+            </li>
+        </ul>
+    </form>
+
+{% else %}
+
+    {{ note.content }}
+    {{ note.created_on }}
+    <button type="button"><a href="/notes/{{note.id}}/edit">Edit</a></button>
+    <button type="button"><a href="/notes/{{note.id}}/delete">Delete</a></button>
+    <button type="button"><a href="/notes/">Back</button>
+
+{% endif %}
 {% endblock %}
