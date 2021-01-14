@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Note
 from .forms import NoteForm
+import base64
+import hashlib
 from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from Crypto.Protocol.KDF import PBKDF2
+from Crypto import Random
 from django.db.models import Q
 
 """ VIEWS """
@@ -150,15 +151,12 @@ def process_encrypted(request, data):
         messages.add_message(request, messages.ERROR, "You cannot share encrypted notes!")
         return False
     
-    nonce = get_random_bytes(16)
-    encrypted_content = encrypt_content(password, content, nonce)
-    encrypted_password = b'there will be password encryption here'
+    encrypted_content = encrypt_content(content, password)
     note = Note(
         user = request.user,
         content = 'ENCRYPTED NOTE',
         is_encrypted = True,
         encrypted_content = encrypted_content,
-        nonce = nonce,
         is_public = False
     )
     note.save()
@@ -189,29 +187,33 @@ def process_unencrypted(request, data):
 
 
 """ ENCRYPTION """
-def fill_password(password, nonce):
-    print(f"password: {password}")
-    print(f"nonce: {nonce}")
-    dk = PBKDF2(password, nonce, 16, 10000)
-    print(f"result: {dk}")
-    return dk
+""" using https://www.quickprogrammingtips.com/ """
 
-def encrypt_content(password, content, nonce):
-    filled_password = fill_password(password, nonce)
-    print(filled_password)
-    aes = AES.new(filled_password, AES.MODE_CFB, nonce)
-    encrypted_content = aes.encrypt(content.encode('utf-8'))
-    return encrypted_content
+BLOCK_SIZE = 16
+pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
+unpad = lambda s: s[:-ord(s[len(s) - 1:])]
+
+def encrypt_content(content, password):
+    private_key = hashlib.sha256(password.encode("utf-8")).digest()
+    content = pad(content)
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(private_key, AES.MODE_CBC, iv)
+    return base64.b64encode(iv + cipher.encrypt(content.encode("utf-8")))
+ 
+ 
+def decrypt(encrypted, password):
+    private_key = hashlib.sha256(password.encode("utf-8")).digest()
+    encrypted = base64.b64decode(encrypted)
+    iv = encrypted[:16]
+    cipher = AES.new(private_key, AES.MODE_CBC, iv)
+    return unpad(cipher.decrypt(encrypted[16:]))
+
+
 
 def decrypt_note(password, note):
-    nonce = note.nonce.tobytes()
-    filled_password = fill_password(password, nonce)
-    print(filled_password)
-    aes = AES.new(filled_password, AES.MODE_CFB, nonce)
+    note.content = decrypt(note.encrypted_content, password)
     try:
-        decrypted_content = aes.decrypt(note.encrypted_content.tobytes())
-        note.content = decrypted_content.decode('utf-8')
+        note.content = note.content.decode("utf-8")
     except:
-        note.content = decrypted_content
-    
+        pass
     return note

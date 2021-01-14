@@ -11,6 +11,5 @@ class Note(models.Model):
 
     is_encrypted = models.BooleanField(default=False)
     encrypted_content = models.BinaryField(blank=True, null=True)
-    nonce = models.BinaryField(blank=True, null=True)
     
     #add files some day
