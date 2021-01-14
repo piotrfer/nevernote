@@ -96,6 +96,9 @@ def edit_note(request, id):
     if request.method == 'POST':
         form = NoteForm(request.POST)
         if form.is_valid():
+            note.content = form.cleaned_data["content"]
+            note.is_public = form.cleaned_data["is_public"]
+            note.save()
             messages.add_message(request, messages.SUCCESS, "Changes were saved")
             return redirect('notes-list')
         else:

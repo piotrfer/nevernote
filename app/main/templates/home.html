@@ -1,5 +1,14 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<h2>Home</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mt-5 text-lg-center">
+            <h1>Hello, {{user}}!</h1>
+            <p class="mt-5 font-weight-light font-italic">
+                <h3>Don't forget to check your notes!</h3>
+            </p>
+        </div>
+      </div>
+</div>
 {% endblock %}

@@ -1,5 +1,20 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<h2>Landing page</h2>
+{% load static %}
+<div class='full-page'>
+    <img src="{% static 'logo.svg' %}" class="center-image">
+</div>
+<style>
+    .center-image {
+        height: 60%;
+        width: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+    }
+</style>
 {% endblock %}
