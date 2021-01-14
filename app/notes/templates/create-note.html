@@ -13,7 +13,7 @@
             <label for="is_encrypted">Encrypt</label>
             <input id="is_encrypted" type="checkbox" name="is_encrypted">
         </li>
-        <li>
+        <li id="ispublic-element">
             <label for="is_public">Public</label>
             <input id="is_public" type="checkbox" name="is_public">
         </li>
@@ -36,17 +36,32 @@
 </style>
 <script>
     window.onload = () => {
-        document.getElementById("is_encrypted").addEventListener("click", handleCheckboxChange)
+        document.getElementById("is_encrypted").addEventListener("change", handleEncryptedCheckboxChange);
+        document.getElementById("is_public").addEventListener("change", handlePublicCheckboxChange);
     }
 
-    handleCheckboxChange = () => {
+    handleEncryptedCheckboxChange = () => {
         if (document.getElementById("is_encrypted").checked) {
             document.getElementById("password-element").className = "input-show";
             document.getElementById("password-input").required = true;
+            document.getElementById("is_public").disabled = true;
+            document.getElementById("is_public").checked = false;
         }
         else {
             document.getElementById("password-element").className = "input-hidden";
             document.getElementById("password-input").required = false;
+            document.getElementById("is_public").disabled = false;
+        }
+    }
+
+    handlePublicCheckboxChange = () => {
+        if (document.getElementById("is_public").checked) {
+            document.getElementById("is_encrypted").disabled = true
+            document.getElementById("is_encrypted").checked = false
+            document.getElementById("password-element").className = "input-hidden";
+        }
+        else {
+            document.getElementById("is_encrypted").disabled = false
         }
     }
 </script>

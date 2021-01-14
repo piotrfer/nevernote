@@ -28,8 +28,14 @@
 
     {{ note.content }}
     {{ note.created_on }}
+
+
+    {% if not public %}
+    {% if not note.is_encrypted %}
     <button type="button"><a href="/notes/{{note.id}}/edit">Edit</a></button>
+    {% endif %}
     <button type="button"><a href="/notes/{{note.id}}/delete">Delete</a></button>
+    {% endif %}
     <button type="button"><a href="/notes/">Back</button>
 
 {% endif %}

@@ -3,9 +3,16 @@
 {% block content %}
 <h2>Notes List</h2>
 <a href="/notes/create">Create note</a>
+<h3>My notes</h3>
 {% for note in notes %}
     <p>{{ note.content }} </p>
     <p>{{ note.created_on }} </p>
     <button><a href="/notes/{{note.id}}/show">Details</a></button>
+{% endfor %}
+<h3>Public notes</h3>
+{% for public_note in public_notes %}
+    <p>{{ public_note.content }} </p>
+    <p>{{ public_note.created_on }} </p>
+    <button><a href="/notes/{{public_note.id}}/show">Details</a></button>
 {% endfor %}
 {% endblock %}

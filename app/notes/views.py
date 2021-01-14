@@ -5,13 +5,16 @@ from .forms import NoteForm
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Protocol.KDF import PBKDF2
+from django.db.models import Q
 
 """ VIEWS """
 def notes(request):
     if not request.user.is_authenticated:
         return unauthorized(request)
     notes = Note.objects.filter(user = request.user)
-    return render(request, "notes-list.html", { "notes" : notes })
+    public_notes = Note.objects.filter(Q(is_public = True) & ~Q(user = request.user))
+
+    return render(request, "notes-list.html", { "notes" : notes, "public_notes" : public_notes })
 
 def create_note(request):
     if not request.user.is_authenticated:
@@ -40,17 +43,24 @@ def show_note(request, id):
     if not request.user.is_authenticated:
         return unauthorized(request)
     
-    note = Note.objects.filter(user = request.user, id = id)[0]
-
-    if request.method == 'GET':
-        if not note:
+    public_note = False
+    notes = Note.objects.filter(user = request.user, id = id)
+    if len(notes) == 0:
+        notes = Note.objects.filter(is_public=True, id = id)
+        if len(notes) == 0:
             messages.add_message(request, messages.ERROR, "Note does not exist")
             return redirect("home")
-        
-        if note.is_encrypted:
-            return render(request, "show-note.html", {"note" : '', "encrypted" : True })
         else:
-            return render(request, "show-note.html", {"note" : note, "encrypted" : False })
+            note = notes[0]
+            public_note = True
+    else:
+        note = notes[0]
+    
+    if request.method == 'GET':
+        if note.is_encrypted:
+            return render(request, "show-note.html", {"note" : '', "encrypted" : True, "public" : public_note })
+        else:
+            return render(request, "show-note.html", {"note" : note, "encrypted" : False, "public" : public_note })
     
     if request.method == 'POST':
         data = request.POST
@@ -120,14 +130,21 @@ def unauthorized(request):
 
 """ FUNCTIONS """
 def process_encrypted(request, data):
-    content = data["content"][0]
-    if not content:
+    
+    if "content" not in data:
         messages.add_message(request, messages.ERROR, "Content cannot be empty!")
         return False
+    
+    content = data["content"][0]
+    
+    if "password_text" not in data:
+        messages.add_message(request, messages.ERROR, "Password cannot be empty!")
+        return False
+
     password = data["password_text"][0]
     
-    if not password:
-        messages.add_message(request, messages.ERROR, "Password cannot be empty!")
+    if "is_public" in data and data["is_public"] == ["on"]:
+        messages.add_message(request, messages.ERROR, "You cannot share encrypted notes!")
         return False
     
     nonce = get_random_bytes(16)
@@ -138,7 +155,8 @@ def process_encrypted(request, data):
         content = 'ENCRYPTED NOTE',
         is_encrypted = True,
         encrypted_content = encrypted_content,
-        nonce = nonce
+        nonce = nonce,
+        is_public = False
     )
     note.save()
     messages.add_message(request, messages.SUCCESS, "Encrypted note was created!")
@@ -146,19 +164,25 @@ def process_encrypted(request, data):
 
 
 def process_unencrypted(request, data):
-    content = data["content"][0]
-    if not content:
+    
+    if "content" not in data:
         messages.add_message(request, messages.ERROR, "Content cannot be empty!")
         return False
-    else:
-        note = Note(
-            user = request.user,
-            content = str(content),
-            is_encrypted = False
-        )
-        note.save()
-        messages.add_message(request, messages.SUCCESS, "Note was created!")
-        return True
+
+    is_public = False
+    if "is_public" in data and data["is_public"] == ["on"]:
+        is_public = True
+
+    content = data["content"][0]
+    note = Note(
+        user = request.user,
+        content = str(content),
+        is_encrypted = False,
+        is_public = is_public
+    )
+    note.save()
+    messages.add_message(request, messages.SUCCESS, "Note was created!")
+    return True
 
 
 
