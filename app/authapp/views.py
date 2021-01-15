@@ -6,8 +6,8 @@ from django.contrib.auth import authenticate, login as login_user, logout as log
 from django.contrib import messages
 import time
 
-LOGIN_DELAY = 1
-
+LOGIN_DELAY_S = 1
+SESSION_EXPIRY_S = 300
 
 def login(request):
     if request.user.is_authenticated:
@@ -16,7 +16,7 @@ def login(request):
         form = LoginForm()
         return render(request, "login.html", { "form" : form })
     if request.method == 'POST':
-        time.sleep(LOGIN_DELAY)
+        time.sleep(LOGIN_DELAY_S)
         form = LoginForm(data=request.POST)
         if form.is_valid():
             user = authenticate(
@@ -33,7 +33,7 @@ def register(request):
     if request.user.is_authenticated:
         return already_authorized(request)
     if request.method == 'POST':
-        time.sleep(LOGIN_DELAY)
+        time.sleep(LOGIN_DELAY_S)
         form = RegisterForm(request.POST)   
         if form.is_valid():
             form.save()
