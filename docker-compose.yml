@@ -20,6 +20,5 @@ services:
       - POSTGRES_USER=nevernote
       - POSTGRES_PASSWORD=nevernote
       - POSTGRES_DB=nevernote_dev
-
 volumes:
   postgres_data:

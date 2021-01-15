@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Note(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -11,5 +12,5 @@ class Note(models.Model):
 
     is_encrypted = models.BooleanField(default=False)
     encrypted_content = models.BinaryField(blank=True, null=True)
-    
-    #add files some day
+
+    # add files some day

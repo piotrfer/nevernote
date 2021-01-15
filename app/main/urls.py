@@ -7,5 +7,6 @@ urlpatterns = [
     path('', views.landing, name="landing-page"),
     path('home/', views.index, name="home"),
     path('me/', views.profile, name="my-profile"),
-    path( "favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon.ico"))),
+    path("favicon.ico", RedirectView.as_view(
+        url=staticfiles_storage.url("favicon.ico"))),
 ]

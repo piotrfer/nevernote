@@ -3,3 +3,4 @@ pyyaml~=5.1
 psycopg2-binary
 django-crispy-forms
 pycryptodome
+gunicorn==20.0.4
