@@ -7,6 +7,7 @@ import hashlib
 from Crypto.Cipher import AES
 from Crypto import Random
 from django.db.models import Q
+import unidecode
 
 """ VIEWS """
 
@@ -220,6 +221,7 @@ def unpad(s): return s[:-ord(s[len(s) - 1:])]
 
 def encrypt_content(content, password):
     private_key = hashlib.sha256(password.encode("utf-8")).digest()
+    content = unidecode.unidecode(content) # not exactly nice way to do this, I know
     content = pad(content)
     iv = Random.new().read(AES.block_size)
     cipher = AES.new(private_key, AES.MODE_CBC, iv)
