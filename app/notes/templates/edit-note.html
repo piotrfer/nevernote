@@ -1,37 +1,34 @@
 {% extends "main/base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
-<h2>Edit note</h2>
-<form method='POST'>
-    {% csrf_token %}
-    <ul>
-        <li>
-            {{ form }}
-        </li>
-        <li>
-            <button type="submit">Save</button>
-            <button type="button"><a href="/notes">Cancel</a></button>
-        </li> 
-        <!-- <li>
-            <label for="content">Content</label>
-            <textarea name="content" rows="4" cols="50">{{ note.content }}</textarea>
-        </li>
-        <li>
-            <li id="ispublic-element">
-                <label for="is_public">Public</label>
-                <input id="is_public" type="checkbox" name="is_public">
-            </li>
-        </li>
-        <li>
-            <button type="submit">Save</button>
-            <button type="button"><a href="/notes">Cancel</a></button>
-        </li>  !-->
-    </ul>
-</form>
-<script>
-
-        document.getElementById("is_public").checked = "{{note.is_public}}";
-
-    
-</script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mt-3 text-lg-center mb-5 mt-5">
+            <h2>Edit note</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 items-center mb-5 mt-5">
+            <form method='POST' enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form|crispy }}
+                <button type="submit" class="btn btn-success">Save</button>
+                <a class="btn btn-outline-secondary" href="/notes">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+    .items-center {
+        margin: auto;
+        justify-self: start;
+        align-content: center;
+        align-items: center;
+        text-align: center;
+    }
+</style>
 {% endblock %}

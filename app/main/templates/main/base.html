@@ -75,10 +75,29 @@
     </div>
     {% endif %}
     {% block content %}{% endblock %}
+    <div class="footer">
+        <a class="no-link" href="https://github.com/piotrfer/nevernote">GitHub Repository</a>
+    </div>
 </body>
 </html>
 <style>
   .messages {
     list-style-type: none;
+  }
+
+  .footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background-color: #f8f9fa !important;
+  color: #212529;
+  text-align: center;
+  }
+
+  .no-link {
+    text-decoration: none;
+    text-emphasis: none;
   }
 </style>

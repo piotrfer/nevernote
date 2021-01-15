@@ -44,9 +44,8 @@ def register(request):
                                  "You have been registered!")
             return redirect("login")
         else:
-            for error_name in form.error_messages:
-                messages.add_message(
-                    request, messages.ERROR, form.error_messages[error_name])
+            messages.add_message(
+                    request, messages.ERROR, form.errors)
             return redirect("register")
     else:
         form = RegisterForm()

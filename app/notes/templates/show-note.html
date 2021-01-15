@@ -5,36 +5,75 @@
 {% endblock %}
 
 {% block content %}
-<h2>Note detail</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mt-3 text-lg-center mb-5 mt-5">
+            <h2>Note detail</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4 items-center">
+            {% if encrypted %}
 
-{% if encrypted %}
+            <form method='POST'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <input class="form-control m-3" type="password" name="password_text" placeholder="Password" required>
+                    <button class="btn btn-sucess" type="submit">Decrypt</button>
+                    <a class="btn btn-secondary" href="/notes/">Back</a>
+                </div>  
+            </form>
 
-    <form method='POST'>
-        {% csrf_token %}
-        <ul>
-            <li>
-                <input type="password" name="password_text" required>
-            </li>
-            <li>
-                <button type="submit">Decrypt</button>
-                <button type="button"><a href="/notes/">Back</button>
-            </li>
-        </ul>
-    </form>
+            {% else %}
+            <div class="card no-list">
+                <ul class="no-list">
+                    <li>
+                        <label>Content</label>
+                        {{ note.content }}
+                    </li>
+                    <li>
+                        <label>Created</label>
+                        {{ note.created_on }}
+                        {% if not public %}
+                    </li>
+                    <li>
+                        <label>Public:</label>
+                        {{ note.is_public }}
+                    </li>
+                    <li>
+                        <label>Encrypted:</label>
+                        {{ note.is_encrypted }}
+                    </li>
+                        {% endif %}
+                    <li>
+                        {% if not public %}
+                        {% if not note.is_encrypted %}
+                        <a class="btn btn-sm btn-success"
+                                href="/notes/{{note.id}}/edit">Edit</a>
+                        {% endif %}
+                       <a class="btn btn-sm btn-danger"
+                                href="/notes/{{note.id}}/delete">Delete</a>
+                        {% endif %}
+                        <a class="btn btn-sm btn-outline-secondary" href="/notes/">Back</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .items-center {
+        margin: auto;
+        justify-self: start;
+        align-content: center;
+        align-items: center;
+        text-align: center;
+    }
 
-{% else %}
+    .no-list {
+        list-style: none;
+    }
+</style>
 
-    {{ note.content }}
-    {{ note.created_on }}
-
-
-    {% if not public %}
-    {% if not note.is_encrypted %}
-    <button type="button"><a href="/notes/{{note.id}}/edit">Edit</a></button>
-    {% endif %}
-    <button type="button"><a href="/notes/{{note.id}}/delete">Delete</a></button>
-    {% endif %}
-    <button type="button"><a href="/notes/">Back</button>
-
-{% endif %}
 {% endblock %}

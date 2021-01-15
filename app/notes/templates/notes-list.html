@@ -8,35 +8,39 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-6 mt-3 items-center">
-            <h3>My notes</h3> <button type="button" class="btn btn-outline-success"><a href="/notes/create" class="no-link" style="float: right;">Create Note</a></button>
+        <div class="col-4 p-5">
+            <h2>My notes</h2>
+            <a href="/notes/create" class="btn btn-outline-success btn-sm">Create Note</a>
+            {% for note in notes %}
+            <div class="card m-3">
+                <div class="card-body items-center">
+                    <!-- <h5 class="card-title">NOTE</h5> -->
+                    <p class="card-text">{{note.content}}</p>
+                   <a href="/notes/{{note.id}}/show"  class="btn btn-sm btn-outline-secondary p-1">Details</a>
+                </div>
+            </div> 
+            {% endfor %}
+        </div>
+        <div class="col-4 p-5">
+            <h2>Public notes</h2>
+            <h4>(Notes created by other users)</h4>
+            {% for public_note in public_notes %}
+            <div class="card items-center m-3">
+                <div class="card-body">
+                    <!-- <h5 class="card-title">NOTE</h5> -->
+                    <p class="card-text">{{public_note.content}}</p>
+                    <a href="/notes/{{public_note.id}}/show"  class="btn btn-sm btn-outline-secondary p-1   ">Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-4 p-5">
+            <h2>Files</h2>
+            <h3>Not available yet</h3>
         </div>
     </div>
-    <div class="row items-center"></div>
-    {% for note in notes %}
-        <div class="col-3 mt-3 items-center">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">NOTE</h5>
-                    <p class="card-text">{{note.content}}</p>
-                    <button class="btn btn-outline-secondary"><a href="/notes/{{note.id}}/show"  class="no-link">Details</a></button>
-                  </div>
-            </div>
-        </div> 
-    {% endfor %}
-    </div>
-    <h3>Other notes</h3>
-    {% for public_note in public_notes %}
-        <p>{{ public_note.content }} </p>
-        <p>{{ public_note.created_on }} </p>
-        <button><a href="/notes/{{public_note.id}}/show">Details</a></button>
-    {% endfor %}
 </div>
 <style>
-    .no-link {
-        text-decoration: none !important;
-        color: inherit;
-    }
     .items-center {
         margin: auto;
         justify-self: start;

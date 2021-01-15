@@ -1,31 +1,46 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<h2>Create note</h2>
-<form method='POST' enctype="multipart/form-data">
-    {% csrf_token %}
-    <uL>
-        <li>
-            <label for="content">Content</label>
-            <textarea name="content" rows="4" cols="50"></textarea>
-        </li>
-        <li>
-            <label for="is_encrypted">Encrypt</label>
-            <input id="is_encrypted" type="checkbox" name="is_encrypted">
-        </li>
-        <li id="ispublic-element">
-            <label for="is_public">Public</label>
-            <input id="is_public" type="checkbox" name="is_public">
-        </li>
-        <li id="password-element" class="input-hidden">
-            <label for="password_text">Password</label>
-            <input id="password-input" type="password" name="password_text" >
-        </li>
-    </uL>
-    <button type="submit" class="btn btn-success">Save</button>
-    <button type="button"><a href="/notes">Cancel</a></button>
-</form>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mt-3 text-lg-center mb-5 mt-5">
+            <h2>Create note</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 items-center mb-5 mt-5">
+            <form method='POST' enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-4 items-center">
+                        <textarea class="form-control" name="content" rows="4" placeholder="Content"></textarea>
+                        <label for="is_encrypted">Encrypt</label>
+                        <input class="form-control" id="is_encrypted" type="checkbox" name="is_encrypted">
+        
+                        <div id="ispublic-element">
+                            <label for="is_public">Public</label>
+                            <input class="form-control" id="is_public" type="checkbox" name="is_public">
+                        </div>
+                        <div id="password-element" class="input-hidden">
+                            <label for="password_text">Password</label>
+                            <input class="form-control" id="password-input" type="password" name="password_text">
+                        </div>
+                        <button type="submit" class="btn btn-success m-3">Save</button>
+                        <a class="btn btn-outline-secondary" href="/notes">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <style>
+    .items-center {
+        margin: auto;
+        justify-self: start;
+        align-content: center;
+        align-items: center;
+        text-align: center;
+    }
     .input-shown {
         display: block;
     }

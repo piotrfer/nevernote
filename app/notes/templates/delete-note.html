@@ -1,11 +1,32 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<h2>Edit note</h2>
-<form method='POST'>
-    {% csrf_token %}
-    <h3>Do you want to delete note?</h3>
-    <button type="submit">Yes</button>
-    <button type="button"><a href="/notes">Take me back</a></button>
-</form>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mt-3 text-lg-center mb-5 mt-5">
+            <h2>Delete note</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 items-center mb-5 mt-5">
+            <form method='POST' enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <h3>Do you want to delete note?</h3>
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                    <a class="btn btn-outline-secondary" href="/notes">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+    .items-center {
+        margin: auto;
+        justify-self: start;
+        align-content: center;
+        align-items: center;
+        text-align: center;
+    }
+</style>
 {% endblock %}
